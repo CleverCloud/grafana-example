@@ -8,8 +8,6 @@ go run build.go build
 yarn install --pure-lockfile
 yarn dev
 
-sed /http_port/s/3000/8080/ -i conf/defaults.ini
-
 mkdir -p data/plugins
 cd data/plugins
 
