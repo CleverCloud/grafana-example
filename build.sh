@@ -6,3 +6,4 @@ go run build.go setup
 go run build.go build
 
 yarn install --pure-lockfile
+yarn build
