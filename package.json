@@ -1,0 +1,11 @@
+{
+  "name" : "grafana-test",
+  "version" : "0.0.1",
+  "scripts" : {
+    "install" : "./build.sh",
+    "start" : "./run.sh"
+  },
+  "engines": {
+    "node" : "^10"
+  }
+}
