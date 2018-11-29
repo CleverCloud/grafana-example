@@ -1,6 +1,6 @@
 # How to set up Grafana on Clever-Cloud
 
-1. create a new NodeJs application linked to a fork of this depo
+1. create a new NodeJs application linked to a fork of this repo
 2. in your application environment variables add ```GF_SERVER_HTTP_PORT=8080``` and ```GOPATH=/home/bas/<app_id>/go_home``` where <app_id> is the id of your application on clever-cloud (found in the top right corner of the console)
 3. you can now build and start the application, be aware however that if you restart it your data will not be persisted (see next section to learn how to persist data)
 
