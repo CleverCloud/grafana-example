@@ -55,3 +55,16 @@ For this example we will use mysql however the procedure shouldn't be too differ
     - ```GF_DATABASE_USER=<MYSQL_ADDON_USER>```
     - ```GF_DATABASE_TYPE=mysql```
 4. for more information on how to change grafana configuration through environment variables please check: http://docs.grafana.org/installation/configuration/
+
+# Adding new plugins to Grafana
+
+For this example we will be adding warp10 as a plugin to Grafana
+1. in your build script, add the following lines:
+    ```
+    mkdir -p data/plugins
+    cd data/plugins
+
+    git clone https://github.com/ovh/ovh-warp10-datasource.git
+    ```
+    this will ensure the plugins directory is created and the plugins are correctly downloaded inside
+3. restart your application, you should now see warp10 available as a plugin
