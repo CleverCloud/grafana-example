@@ -1,45 +1,8 @@
 # How to set up Grafana on Clever-Cloud
 
-1. create a new NodeJs application
-2. either fork this repo and link it to the application or:
-    - create a new repo with a package.json with at least:
-    ```
-    {
-      "name" : "<name-of-your-app>",
-      "version" : "<version>",
-      "scripts" : {
-          "install" : "./build.sh",
-          "start" : "./run.sh"
-      },
-      "engines": {
-          "node" : "^10"
-      }
-    }
-    ```    
-    - then create both scripts, the install one will build grafana and the start one will start the grafana-server binary
-    - in the install script put:
-    ```
-    #!/bin/bash
-    
-    go get github.com/grafana/grafana
-    cd $GOPATH/src/github.com/grafana/grafana
-    go run build.go setup
-    go run build.go build
-    
-    yarn install --pure-lockfile
-    yarn dev
-    ```
-    - this will build both the back-end and the front-end of Grafana.
-    - add ```GOPATH=/home/bas/<app_id>/go_home``` in your environment variables where <app_id> is the id of the app on clever-cloud
-    - in the start script put:
-    ```
-    #!/bin/bash
-
-    cd $GOPATH/src/github.com/grafana/grafana
-    $GOPATH/bin/grafana-server
-    ```
-    - finally add ```GF_SERVER_HTTP_PORT=8080``` in your app environment variables to ensure Grafana starts on the correct port and make sure you have enabled a dedicated build instance
-    - Grafana is now ready to start however at this point if you restart the app, all data will be lost as it's not persisted in a database
+1. create a new NodeJs application linked to a fork of this depo
+2. in your application environment variables add ```GF_SERVER_HTTP_PORT=8080``` and ```GOPATH=/home/bas/<app_id>/go_home``` where <app_id> is the id of your application on clever-cloud (found in the top right corner of the console)
+3. you can now build and start the application, be aware however that if you restart it your data will not be persisted (see next section to learn how to persist data)
 
 # Persisting Data on a database
 
@@ -55,6 +18,48 @@ For this example we will use mysql however the procedure shouldn't be too differ
     - ```GF_DATABASE_USER=<MYSQL_ADDON_USER>```
     - ```GF_DATABASE_TYPE=mysql```
 4. for more information on how to change grafana configuration through environment variables please check: http://docs.grafana.org/installation/configuration/
+
+# How it works
+
+1. create a new repo with a package.json with at least:
+    ```
+    {
+      "name" : "<name-of-your-app>",
+      "version" : "<version>",
+      "scripts" : {
+          "install" : "./build.sh",
+          "start" : "./run.sh"
+      },
+      "engines": {
+          "node" : "^10"
+      }
+    }
+    ```
+2. then create both scripts, the install one will build grafana and the start one will start the grafana-server binary
+3. in the install script put:
+    ```
+    #!/bin/bash
+    
+    go get github.com/grafana/grafana
+    cd $GOPATH/src/github.com/grafana/grafana
+    go run build.go setup
+    go run build.go build
+    
+    yarn install --pure-lockfile
+    yarn dev
+    ```
+4. this will build both the back-end and the front-end of Grafana.
+5. add ```GOPATH=/home/bas/<app_id>/go_home``` in your environment variables where <app_id> is the id of the app on clever-cloud
+6. in the start script put:
+    ```
+    #!/bin/bash
+
+    cd $GOPATH/src/github.com/grafana/grafana
+    $GOPATH/bin/grafana-server
+    ```
+7. finally add ```GF_SERVER_HTTP_PORT=8080``` in your app environment variables to ensure Grafana starts on the correct port and make sure you have enabled a dedicated build instance
+8. Grafana is now ready to start however at this point if you restart the app, all data will be lost as it's not persisted in a database
+
 
 # Adding new plugins to Grafana
 
