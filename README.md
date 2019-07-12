@@ -57,7 +57,7 @@ For this example we will use mysql however the procedure shouldn't be too differ
     cd $GOPATH/src/github.com/grafana/grafana
     $GOPATH/bin/grafana-server
     ```
-7. finally add ```GF_SERVER_HTTP_PORT=8080``` in your app environment variables to ensure Grafana starts on the correct port and make sure you have enabled a dedicated build instance
+7. finally add ```GF_SERVER_HTTP_PORT=8080``` in your app environment variables to ensure Grafana starts on the correct port and **make sure you have enabled a dedicated build instance**
 8. Grafana is now ready to start however at this point if you restart the app, all data will be lost as it's not persisted in a database
 
 
