@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -euo pipefail
 
@@ -7,20 +7,35 @@ if [[ -z "${GRAFANA_VERSION}" ]]; then
   exit 1
 fi
 
-git clone https://github.com/grafana/grafana --depth=1 --branch "${GRAFANA_VERSION}"
+wget https://dl.grafana.com/oss/release/grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz
+echo "${GRAFANA_SHA_256}  grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz" | sha256sum -c
+tar -zxf grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz
+mv grafana-${GRAFANA_VERSION} grafana
 
 cd grafana
 
-make all
-
-mkdir -p $GOPATH/bin/
-
-for bin in grafana-cli grafana-server; do
-  cp bin/linux-amd64/${bin} $GOPATH/bin/
-done
-
 mkdir -p data/plugins
+
+## Load custom plugins (set in GRAFANA_PLUGINS env variable)
+
 cd data/plugins
-
-git clone https://github.com/ovh/ovh-warp10-datasource.git
-
+plugins="${GRAFANA_PLUGINS}"
+readarray -td, array <<<"$plugins,"
+unset 'array[-1]'
+declare -p array
+for plugin in "${array[@]}"
+do
+  if [[ $plugin == http* ]]
+  then
+    git clone "$plugin"
+  else 
+    name=${plugin%%:*}
+    version=${plugin##*:}
+    if [ "$name" != "$version" ];
+    then
+      ../../bin/grafana-cli plugins install "$name" "$version"
+    else 
+      ../../bin/grafana-cli plugins install "$name"
+    fi
+  fi
+done
