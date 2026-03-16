@@ -1,0 +1,60 @@
+[tasks.build]
+description = "Download and install Grafana"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -z "${GRAFANA_VERSION:-}" ]]; then
+  echo "Error: GRAFANA_VERSION environment variable is not set"
+  exit 1
+fi
+
+wget -q "https://dl.grafana.com/oss/release/grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz"
+
+if [[ -n "${GRAFANA_SHA_256:-}" ]]; then
+  echo "${GRAFANA_SHA_256}  grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz" | sha256sum -c
+fi
+
+tar -zxf "grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz"
+
+# Find the extracted directory (name varies across versions)
+extracted_dir=$(ls -d grafana-*/ 2>/dev/null | grep -v '.tar.gz' | head -1)
+if [[ -z "$extracted_dir" ]]; then
+  echo "Error: could not find extracted Grafana directory"
+  exit 1
+fi
+mv "$extracted_dir" grafana
+
+GRAFANA_DIR="$(pwd)/grafana/"
+echo "Grafana tar.gz file extracted to $GRAFANA_DIR"
+
+PLUGINS_DIR="$(pwd)/grafana/data/plugins"
+mkdir -p "$PLUGINS_DIR"
+
+# Install plugins from GRAFANA_PLUGINS env variable (comma-separated)
+if [[ -n "${GRAFANA_PLUGINS:-}" ]]; then
+  IFS=',' read -ra plugins <<< "${GRAFANA_PLUGINS}"
+  for plugin in "${plugins[@]}"; do
+    if [[ "$plugin" == http* ]]; then
+      git -C "$PLUGINS_DIR" clone "$plugin"
+    else
+      name="${plugin%%:*}"
+      version="${plugin##*:}"
+      if [[ "$name" != "$version" ]]; then
+        echo "Installing plugin $name $version"
+        grafana/bin/grafana cli --homepath "$GRAFANA_DIR" --pluginsDir "$PLUGINS_DIR" plugins install "$name" "$version"
+      else
+        echo "Installing plugin $name"
+        grafana/bin/grafana cli --homepath "$GRAFANA_DIR" --pluginsDir "$PLUGINS_DIR" plugins install "$name"
+      fi
+    fi
+  done
+fi
+
+echo "Plugins installed"
+
+"""
+
+[tasks.run]
+description = "Start Grafana server"
+run = "grafana/bin/grafana server -homepath ${APP_HOME}/grafana"
